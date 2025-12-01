@@ -8,7 +8,152 @@
         <script src="Genotype.js"></script>
         <script src="Organism.js"></script>
         <script src="Food.js"></script>
-        <script src="sketch.js"></script>
+        <link rel="stylesheet" href="style.css" />
     </head>
-    <body></body>
+    <body>
+        <section>
+            <h3 id="project-title">Evolution Simulator</h3>
+        </section>
+        <section class="app_container">
+            <section class="sim_container">
+                <div id="canvasContainer" class="canvas"></div>
+                <div id="ui">
+                    <button id="startBtn" class="btn">Start</button>
+                    <button id="stopBtn" class="btn">Stop</button>
+                    <button id="resetBtn" class="btn">Reset</button>
+                    <button id="downloadBtn" class="btn">Download CSV</button>
+                </div>
+            </section>
+            <section class="customizations">
+                <h3>Customizations</h3>
+                <div class="inputs">
+                    <h4>World Settings</h4>
+                    <div class="world-setup">
+                        <label
+                            ><span>Number of organisms:</span>
+                            <input
+                                type="number"
+                                id="noOfOrg"
+                                value="5"
+                            /> </label
+                        ><br />
+                        <label
+                            ><span>Number of Food Sources:</span>
+                            <input
+                                type="number"
+                                id="noOfFood"
+                                value="36"
+                            /> </label
+                        ><br />
+                    </div>
+
+                    <div class="organism-base-stats">
+                        <details>
+                            <summary>Organism Base Stats</summary>
+                            <div>
+                                <label>
+                                    <span>Speed:</span>
+                                    <input
+                                        type="number"
+                                        step="0.1"
+                                        id="speed"
+                                        value="1.0"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Vision:</span>
+                                    <input
+                                        type="number"
+                                        id="vision"
+                                        value="80"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Size:</span>
+                                    <input
+                                        type="number"
+                                        id="size"
+                                        value="12"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Hungry Threshold:</span>
+                                    <input
+                                        type="number"
+                                        id="hungryThreshold"
+                                        value="30"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Fertility Threshold:</span>
+                                    <input
+                                        type="number"
+                                        id="fertilityThreshold"
+                                        value="90"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Mutation Rate:</span>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        id="mutationRate"
+                                        value="0.05"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Offspring Energy Cost:</span>
+                                    <input
+                                        type="number"
+                                        id="offspringEnergyCost"
+                                        value="50"
+                                    /> </label
+                                ><br />
+                                <label>
+                                    <span>Max Age:</span>
+                                    <input
+                                        type="number"
+                                        id="maxAge"
+                                        value="100"
+                                    />
+                                </label>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+                <div class="color-btns">
+                    <h4>Trait based organism coloring</h4>
+                    <button id="colorSpeed" class="btn">Speed</button>
+                    <button id="colorSize" class="btn">Size</button>
+                    <button id="colorVision" class="btn">Vision</button>
+                </div>
+            </section>
+        </section>
+        <section class="graphs-section">
+            <h3>Graphs</h3>
+            <div class="graphs">
+                <div class="graph graph-population">
+                    <canvas id="graphPopulation"></canvas>
+                </div>
+                <div class="graph graph-speed">
+                    <canvas id="graphSpeed"></canvas>
+                </div>
+                <div class="graph graph-vision">
+                    <canvas id="graphVision"></canvas>
+                </div>
+                <div class="graph graph-size">
+                    <canvas id="graphSize"></canvas>
+                </div>
+                <div class="graph graph-hungry">
+                    <canvas id="graphHungry"></canvas>
+                </div>
+                <div class="graph graph-fertility">
+                    <canvas id="graphFertility"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <script src="sketch.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </body>
 </html>
