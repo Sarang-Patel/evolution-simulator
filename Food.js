@@ -23,7 +23,7 @@ class Food {
 
     draw() {
         if (this.available) {
-            fill(0, 100, 10, 150);
+            fill(108, 100, 20, 0.588);
             noStroke();
             circle(this.x, this.y, this.size);
         }

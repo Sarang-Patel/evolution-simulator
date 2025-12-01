@@ -42,6 +42,8 @@ let cols = 6;
 function setup() {
     let cnv = createCanvas(700, 700);
     cnv.parent("canvasContainer");
+    colorMode(HSL);
+
 
     UI = {
         noOfOrg: document.getElementById("noOfOrg"),
@@ -219,7 +221,7 @@ function draw() {
                 c = traitColor(o.size, minSize, maxSize, 180);
             else if (colorModeSetting === "vision")
                 c = traitColor(o.vision, minVision, maxVision, 30);
-            else c = color(150, 150, 0);
+            else c = color(60, 100, 29);
 
             fill(c);
             noStroke();
@@ -256,9 +258,7 @@ function traitColor(value, minV, maxV, baseHue) {
     t = constrain(t, 0, 1);
     let light = map(t, 0, 1, 90, 30);
 
-    colorMode(HSL);
     let c = color(baseHue, 80, light);
-    colorMode(RGB);
 
     return c;
 }
