@@ -7,7 +7,7 @@ class Genotype {
         fertilityThreshold,
         mutationRate,
         offspringEnergyCost,
-        maxAge
+        maxAge,
     }) {
         this.speed = speed;
         this.vision = vision;
@@ -19,25 +19,26 @@ class Genotype {
         this.maxAge = maxAge;
     }
 
-     mutatedCopy() {
+    mutatedCopy() {
         const m = this.mutationRate;
 
-        function mutate(value) {
-            return value + random(-m, m) * value;
+        function mutate(value, min, max, chance = 0.1) {
+            if (random() > chance) return value;
+            const mutated = value + random(-m, m) * value;
+            return constrain(mutated, min, max);
         }
 
         return new Genotype({
-            speed: mutate(this.speed),
-            vision: mutate(this.vision),
-            size: mutate(this.size),
-            hungryThreshold: mutate(this.hungryThreshold),
-            fertilityThreshold: mutate(this.fertilityThreshold),
+            speed: mutate(this.speed, 0.5, 2.5),
+            vision: mutate(this.vision, 65, 95),
+            size: mutate(this.size, 8, 12),
+            hungryThreshold: mutate(this.hungryThreshold, 20, 45),
+            fertilityThreshold: mutate(this.fertilityThreshold, 70, 120),
             mutationRate: this.mutationRate,
             offspringEnergyCost: this.offspringEnergyCost,
-            maxAge: this.maxAge
+            maxAge: this.maxAge,
         });
     }
 }
-
 
 window.Genotype = Genotype;

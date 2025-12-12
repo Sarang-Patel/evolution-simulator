@@ -9,6 +9,9 @@ let charts = {};
 
 let simRunning = false;
 
+//simulation speed
+let timeScale = 1;
+
 let colorModeSetting = "species";
 
 let populationHistory = [];
@@ -22,7 +25,7 @@ let fertilityHistory = [];
 let baseStats = {
     speed: 1.0,
     vision: 80,
-    size: 12,
+    size: 10,
     hungryThreshold: 30,
     fertilityThreshold: 90,
     mutationRate: 0.05,
@@ -43,7 +46,6 @@ function setup() {
     let cnv = createCanvas(700, 700);
     cnv.parent("canvasContainer");
     colorMode(HSL);
-
 
     UI = {
         noOfOrg: document.getElementById("noOfOrg"),
@@ -77,7 +79,7 @@ function setup() {
         .getElementById("colorVision")
         .addEventListener("click", () => (colorModeSetting = "vision"));
 
-        initializeSimulationState();
+    initializeSimulationState();
     drawAllGraphs();
     noLoop();
 }
@@ -211,7 +213,7 @@ function draw() {
         for (let o of organisms) {
             if (!o.alive) continue;
 
-            let baby = o.update(foodSources.filter((f) => f.available));
+            let baby = o.update(foodSources.filter((f) => f.available), timeScale);
             if (baby) newOrganisms.push(baby);
 
             let c;
@@ -226,6 +228,7 @@ function draw() {
             fill(c);
             noStroke();
             circle(o.x, o.y, o.size);
+            // o.drawVision();
         }
 
         organisms = organisms.filter((o) => o.alive);
@@ -286,14 +289,13 @@ function saveDataCSV() {
 }
 
 const graphColors = {
-    graphPopulation: "hsl(140, 60%, 40%)",   // muted green
-    graphSpeed: "hsl(0, 65%, 45%)",          // muted red
-    graphVision: "hsl(220, 60%, 45%)",       // muted blue
-    graphSize: "hsl(30, 55%, 45%)",          // muted orange
-    graphHungry: "hsl(50, 60%, 45%)",        // mustard yellow
-    graphFertility: "hsl(280, 55%, 45%)"     // soft purple
+    graphPopulation: "hsl(140, 60%, 40%)", // muted green
+    graphSpeed: "hsl(0, 65%, 45%)", // muted red
+    graphVision: "hsl(220, 60%, 45%)", // muted blue
+    graphSize: "hsl(30, 55%, 45%)", // muted orange
+    graphHungry: "hsl(50, 60%, 45%)", // mustard yellow
+    graphFertility: "hsl(280, 55%, 45%)", // soft purple
 };
-
 
 function drawLineGraph(id, dataArray, label) {
     const canvas = document.getElementById(id);
@@ -330,12 +332,12 @@ function drawLineGraph(id, dataArray, label) {
                 legend: {
                     labels: {
                         color: graphColors[id],
-                        font : {
-                            family : "Inter"
-                        } 
-                    }
-                }
-            }
+                        font: {
+                            family: "Inter",
+                        },
+                    },
+                },
+            },
         },
     });
 }

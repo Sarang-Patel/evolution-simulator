@@ -39,9 +39,11 @@ class Organism {
     }
 
     // main update every frame
-    update(foodSources) {
-        this.age += deltaTime / 1000;
-        this.energy -= 0.08 * (deltaTime / 16.666);
+    update(foodSources, timeScale) {
+        //TODO: change energy usage with age
+        this.age += deltaTime / 1000 * timeScale;
+        let cost = 0.02 * (this.speed ** 2) * 0.01 + (this.size ** 0.75) * 0.01;
+        this.energy -= cost * (deltaTime / 16.666) * timeScale;
         this.isDead();
 
         let target = this.findClosestFood(foodSources);
@@ -52,9 +54,10 @@ class Organism {
             this.move();
         }
 
+        
         if (this.energy <= this.hungry) this.eatFood(foodSources);
 
-        if (this.energy >= this.fertility) return this.reproduce();
+        if (this.energy >= this.fertility && this.age > 0.2 * this.genotype.maxAge) return this.reproduce();
     }
 
     // creates a new org based on parents stats
@@ -114,7 +117,8 @@ class Organism {
     // draws the vision boundary around the org
     drawVision() {
         let step = PI / 16;
-        stroke(0, 0, 255, 255);
+        stroke(220, 80, 50);
+        strokeWeight(2);
         noFill();
 
         for (let angle = 0; angle < TWO_PI; angle += step) {
