@@ -39,11 +39,12 @@ class Organism {
     }
 
     // main update every frame
-    update(foodSources, timeScale) {
+    update(foodSources, dt) {
         //TODO: change energy usage with age
-        this.age += deltaTime / 1000 * timeScale;
+        this.age += dt;
+
         let cost = 0.02 * (this.speed ** 2) * 0.01 + (this.size ** 0.75) * 0.01;
-        this.energy -= cost * (deltaTime / 16.666) * timeScale;
+        this.energy -= cost * (dt / 0.016666);
         this.isDead();
 
         let target = this.findClosestFood(foodSources);

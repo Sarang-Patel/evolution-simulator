@@ -1,23 +1,30 @@
 class Food {
-    constructor(x, y, size = 35, respawnTime = 4000) {
+    constructor(x, y, size = 35, respawnTime = 4) {
         this.x = x;
         this.y = y;
         this.size = size;
         this.radius = size / 2;
+
         this.available = true;
+
+        // respawnTime is now in SECONDS
         this.respawnTime = respawnTime;
-        this.eatenAt = null;
+        this.timer = 0;
     }
 
     eat() {
         this.available = false;
-        this.eatenAt = millis();
+        this.timer = 0;
     }
 
-    update() {
-        if (!this.available && millis() - this.eatenAt >= this.respawnTime) {
-            this.available = true;
-            this.eatenAt = null;
+    update(dt) {
+        if (!this.available) {
+            this.timer += dt;
+
+            if (this.timer >= this.respawnTime) {
+                this.available = true;
+                this.timer = 0;
+            }
         }
     }
 

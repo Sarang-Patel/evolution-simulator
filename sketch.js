@@ -9,9 +9,6 @@ let charts = {};
 
 let simRunning = false;
 
-//simulation speed
-let timeScale = 1;
-
 let colorModeSetting = "species";
 
 let populationHistory = [];
@@ -20,6 +17,10 @@ let visionHistory = [];
 let sizeHistory = [];
 let hungryHistory = [];
 let fertilityHistory = [];
+
+let recordInterval = 0.5; // seconds
+let recordTimer = 0;
+
 
 // default values
 let baseStats = {
@@ -80,6 +81,7 @@ function setup() {
         .addEventListener("click", () => (colorModeSetting = "vision"));
 
     initializeSimulationState();
+    renderStaticWorld();
     drawAllGraphs();
     noLoop();
 }
@@ -153,6 +155,18 @@ function initializeSimulationState() {
     }
 }
 
+function renderStaticWorld() {
+    renderSimulation({
+        minSpeed: 0,
+        maxSpeed: 1,
+        minSize: 0,
+        maxSize: 1,
+        minVision: 0,
+        maxVision: 1,
+    });
+}
+
+
 // =========================
 // Start / Stop / Reset
 // =========================
@@ -174,68 +188,93 @@ function stopSim() {
 }
 
 function resetSimulation() {
-    stopSim();
+    simRunning = false;
+    noLoop();
+
     initializeSimulationState();
-    redraw();
+
+    renderStaticWorld();
+
+    drawAllGraphs();
 }
+
+
+let fastForwardSteps = 1;
+
+document.getElementById("ff1x").addEventListener("click", () => {
+    fastForwardSteps = 1;
+});
+
+document.getElementById("ff10x").addEventListener("click", () => {
+    fastForwardSteps = 10;
+});
+
+document.getElementById("ff50x").addEventListener("click", () => {
+    fastForwardSteps = 50;
+});
+
 
 // =========================
 // MAIN DRAW LOOP
 // =========================
 function draw() {
-    background(245);
+    if (!simRunning) return;
 
-    // food
-    for (let f of foodSources) {
-        f.update();
-        f.draw();
+    const dt = deltaTime / 1000;
+
+    let stats;
+    for (let i = 0; i < fastForwardSteps; i++) {
+        stats = updateSimulation(dt);
     }
 
-    if (simRunning) {
-        let minSpeed = Infinity,
-            maxSpeed = -Infinity;
-        let minSize = Infinity,
-            maxSize = -Infinity;
-        let minVision = Infinity,
-            maxVision = -Infinity;
+    renderSimulation(stats);
+}
 
-        for (let o of organisms) {
-            minSpeed = min(minSpeed, o.speed);
-            maxSpeed = max(maxSpeed, o.speed);
 
-            minSize = min(minSize, o.size);
-            maxSize = max(maxSize, o.size);
 
-            minVision = min(minVision, o.vision);
-            maxVision = max(maxVision, o.vision);
-        }
+function updateSimulation(dt) {
+    // food logic
+    for (let f of foodSources) {
+        f.update(dt);
+    }
 
-        for (let o of organisms) {
-            if (!o.alive) continue;
 
-            let baby = o.update(foodSources.filter((f) => f.available), timeScale);
-            if (baby) newOrganisms.push(baby);
+    let minSpeed = Infinity, maxSpeed = -Infinity;
+    let minSize = Infinity, maxSize = -Infinity;
+    let minVision = Infinity, maxVision = -Infinity;
 
-            let c;
-            if (colorModeSetting === "speed")
-                c = traitColor(o.speed, minSpeed, maxSpeed, 280);
-            else if (colorModeSetting === "size")
-                c = traitColor(o.size, minSize, maxSize, 180);
-            else if (colorModeSetting === "vision")
-                c = traitColor(o.vision, minVision, maxVision, 30);
-            else c = color(60, 100, 29);
+    for (let o of organisms) {
+        minSpeed = min(minSpeed, o.speed);
+        maxSpeed = max(maxSpeed, o.speed);
 
-            fill(c);
-            noStroke();
-            circle(o.x, o.y, o.size);
-            // o.drawVision();
-        }
+        minSize = min(minSize, o.size);
+        maxSize = max(maxSize, o.size);
 
-        organisms = organisms.filter((o) => o.alive);
-        organisms.push(...newOrganisms);
-        newOrganisms = [];
+        minVision = min(minVision, o.vision);
+        maxVision = max(maxVision, o.vision);
+    }
 
-        // record traits
+    for (let o of organisms) {
+        if (!o.alive) continue;
+
+        let baby = o.update(
+            foodSources.filter(f => f.available),
+            dt
+        );
+
+        if (baby) newOrganisms.push(baby);
+    }
+
+    organisms = organisms.filter(o => o.alive);
+    organisms.push(...newOrganisms);
+    newOrganisms = [];
+
+    // record history
+    recordTimer += dt;
+
+    if (recordTimer >= recordInterval) {
+        recordTimer = 0;
+
         populationHistory.push(organisms.length);
         speedHistory.push(avgTrait("speed"));
         visionHistory.push(avgTrait("vision"));
@@ -243,7 +282,38 @@ function draw() {
         hungryHistory.push(avgTrait("hungryThreshold"));
         fertilityHistory.push(avgTrait("fertilityThreshold"));
     }
+
+
+    return { minSpeed, maxSpeed, minSize, maxSize, minVision, maxVision };
 }
+
+function renderSimulation(stats) {
+    background(245);
+
+    // draw food
+    for (let f of foodSources) {
+        f.draw();
+    }
+
+    for (let o of organisms) {
+        let c;
+
+        if (colorModeSetting === "speed")
+            c = traitColor(o.speed, stats.minSpeed, stats.maxSpeed, 280);
+        else if (colorModeSetting === "size")
+            c = traitColor(o.size, stats.minSize, stats.maxSize, 180);
+        else if (colorModeSetting === "vision")
+            c = traitColor(o.vision, stats.minVision, stats.maxVision, 30);
+        else
+            c = color(60, 100, 29);
+
+        fill(c);
+        noStroke();
+        circle(o.x, o.y, o.size);
+    }
+}
+
+
 
 // =========================
 // Utilities
