@@ -202,15 +202,49 @@ function resetSimulation() {
 let fastForwardSteps = 1;
 
 document.getElementById("ff1x").addEventListener("click", () => {
+    document.querySelectorAll(".ffx").forEach(element => {
+        element.classList.remove("active");
+    });
+    document.getElementById("ff1x").classList.add("active");
     fastForwardSteps = 1;
 });
 
 document.getElementById("ff10x").addEventListener("click", () => {
+    document.querySelectorAll(".ffx").forEach(element => {
+        element.classList.remove("active");
+    });
+    document.getElementById("ff10x").classList.add("active");
     fastForwardSteps = 10;
 });
 
 document.getElementById("ff50x").addEventListener("click", () => {
+    document.querySelectorAll(".ffx").forEach(element => {
+        element.classList.remove("active");
+    });
+    document.getElementById("ff50x").classList.add("active");
+
     fastForwardSteps = 50;
+});
+
+document.getElementById("colorSpeed").addEventListener("click", () => {
+    document.querySelectorAll(".color").forEach(element => {
+        element.classList.remove("active");
+    });
+    document.getElementById("colorSpeed").classList.add("active");
+});
+
+document.getElementById("colorSize").addEventListener("click", () => {
+    document.querySelectorAll(".color").forEach(element => {
+        element.classList.remove("active");
+    });
+    document.getElementById("colorSize").classList.add("active");
+});
+
+document.getElementById("colorVision").addEventListener("click", () => {
+    document.querySelectorAll(".color").forEach(element => {
+        element.classList.remove("active");
+    });
+    document.getElementById("colorVision").classList.add("active");
 });
 
 
