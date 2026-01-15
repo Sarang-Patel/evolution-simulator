@@ -7,9 +7,24 @@ let newOrganisms = [];
 let UI = {};
 let charts = {};
 
-let simRunning = false;
+const SIM_STATE = Object.freeze({
+    INIT: "init",
+    RUNNING: "running",
+    PAUSED: "paused",
+});
 
-let colorModeSetting = "species";
+const COLOR_MODE = Object.freeze({
+    SPECIES: "species",
+    SPEED: "speed",
+    SIZE: "size",
+    VISION: "vision",
+});
+
+
+let lastStats = null;
+
+let simState = SIM_STATE.INIT;
+let colorModeSetting = COLOR_MODE.SPECIES;
 
 let populationHistory = [];
 let speedHistory = [];
@@ -72,13 +87,13 @@ function setup() {
 
     document
         .getElementById("colorSpeed")
-        .addEventListener("click", () => (colorModeSetting = "speed"));
+        .addEventListener("click", () => (colorModeSetting = COLOR_MODE.SPEED));
     document
         .getElementById("colorSize")
-        .addEventListener("click", () => (colorModeSetting = "size"));
+        .addEventListener("click", () => (colorModeSetting = COLOR_MODE.SIZE));
     document
         .getElementById("colorVision")
-        .addEventListener("click", () => (colorModeSetting = "vision"));
+        .addEventListener("click", () => (colorModeSetting = COLOR_MODE.VISION));
 
     initializeSimulationState();
     renderStaticWorld();
@@ -127,6 +142,8 @@ function initializeSimulationState() {
     hungryHistory = [];
     fertilityHistory = [];
 
+    colorModeSetting = COLOR_MODE.SPECIES;
+
     BASE_GENOTYPE = new Genotype(baseStats);
 
     // place food
@@ -171,97 +188,72 @@ function renderStaticWorld() {
 // Start / Stop / Reset
 // =========================
 function startSim() {
-    if (!simRunning) {
-        readUserInputs();
-        initializeSimulationState();
-
-        simRunning = true;
+    if (simState !== SIM_STATE.RUNNING) {
+        simState = SIM_STATE.RUNNING;
         loop();
     }
 }
 
 function stopSim() {
-    simRunning = false;
+    simState = SIM_STATE.PAUSED;
     noLoop();
-
+    renderSimulation(lastStats);
     drawAllGraphs();
 }
 
 function resetSimulation() {
-    simRunning = false;
+    simState = SIM_STATE.INIT;
     noLoop();
-
     initializeSimulationState();
-
+    lastStats = null;
     renderStaticWorld();
-
     drawAllGraphs();
 }
 
 
 let fastForwardSteps = 1;
 
-document.getElementById("ff1x").addEventListener("click", () => {
-    document.querySelectorAll(".ffx").forEach(element => {
-        element.classList.remove("active");
-    });
-    document.getElementById("ff1x").classList.add("active");
-    fastForwardSteps = 1;
+document.addEventListener("click", (e) => {
+    const ffButton = e.target.closest(".ffx");
+    const colorButton = e.target.closest(".color");
+
+    if (ffButton) {
+        document.querySelectorAll(".ffx").forEach(el =>
+            el.classList.remove("active")
+        );
+
+        ffButton.classList.add("active");
+        fastForwardSteps = Number(ffButton.dataset.ff);
+    }
+
+    if (colorButton) {
+        document.querySelectorAll(".color").forEach(el =>
+            el.classList.remove("active")
+        );
+
+        colorButton.classList.add("active");
+    }
 });
 
-document.getElementById("ff10x").addEventListener("click", () => {
-    document.querySelectorAll(".ffx").forEach(element => {
-        element.classList.remove("active");
-    });
-    document.getElementById("ff10x").classList.add("active");
-    fastForwardSteps = 10;
-});
-
-document.getElementById("ff50x").addEventListener("click", () => {
-    document.querySelectorAll(".ffx").forEach(element => {
-        element.classList.remove("active");
-    });
-    document.getElementById("ff50x").classList.add("active");
-
-    fastForwardSteps = 50;
-});
-
-document.getElementById("colorSpeed").addEventListener("click", () => {
-    document.querySelectorAll(".color").forEach(element => {
-        element.classList.remove("active");
-    });
-    document.getElementById("colorSpeed").classList.add("active");
-});
-
-document.getElementById("colorSize").addEventListener("click", () => {
-    document.querySelectorAll(".color").forEach(element => {
-        element.classList.remove("active");
-    });
-    document.getElementById("colorSize").classList.add("active");
-});
-
-document.getElementById("colorVision").addEventListener("click", () => {
-    document.querySelectorAll(".color").forEach(element => {
-        element.classList.remove("active");
-    });
-    document.getElementById("colorVision").classList.add("active");
-});
 
 
 // =========================
 // MAIN DRAW LOOP
 // =========================
 function draw() {
-    if (!simRunning) return;
+    if (simState === SIM_STATE.RUNNING) {
+        const dt = deltaTime / 1000;
 
-    const dt = deltaTime / 1000;
+        for (let i = 0; i < fastForwardSteps; i++) {
+            lastStats = updateSimulation(dt);
+        }
 
-    let stats;
-    for (let i = 0; i < fastForwardSteps; i++) {
-        stats = updateSimulation(dt);
+        renderSimulation(lastStats);
     }
 
-    renderSimulation(stats);
+    if (simState === SIM_STATE.PAUSED && lastStats) {
+        renderSimulation(lastStats);
+    }
 }
 
 
@@ -288,11 +280,13 @@ function updateSimulation(dt) {
         maxVision = max(maxVision, o.vision);
     }
 
+    const availableFood = foodSources.filter(f => f.available);
+
     for (let o of organisms) {
         if (!o.alive) continue;
 
         let baby = o.update(
-            foodSources.filter(f => f.available),
+            availableFood,
             dt
         );
 
@@ -332,11 +326,11 @@ function renderSimulation(stats) {
     for (let o of organisms) {
         let c;
 
-        if (colorModeSetting === "speed")
+        if (colorModeSetting === COLOR_MODE.SPEED)
             c = traitColor(o.speed, stats.minSpeed, stats.maxSpeed, 280);
-        else if (colorModeSetting === "size")
+        else if (colorModeSetting === COLOR_MODE.SIZE)
             c = traitColor(o.size, stats.minSize, stats.maxSize, 180);
-        else if (colorModeSetting === "vision")
+        else if (colorModeSetting === COLOR_MODE.VISION)
             c = traitColor(o.vision, stats.minVision, stats.maxVision, 30);
         else
             c = color(60, 100, 29);
